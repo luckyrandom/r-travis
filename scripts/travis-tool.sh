@@ -5,7 +5,6 @@
 set -e
 
 OS=$(uname -s)
-HAVE_DEVTOOLS="no"
 CRAN=${CRAN:-"http://cran.rstudio.com"}    
 
 Bootstrap() {
@@ -16,6 +15,11 @@ Bootstrap() {
     else
         echo "Unknown OS: ${OS}"
         exit 1
+    fi
+
+    test -e .Rbuildignore && grep -q 'travis-tool' .Rbuildignore
+    if [[ $? -ne 0 ]]; then
+        echo '^travis-tool\.sh$' >>.Rbuildignore
     fi
 }
 
@@ -46,12 +50,12 @@ BootstrapMac() {
     sudo installer -pkg "/tmp/R-latest.pkg" -target /
 }
 
-DevtoolsInstall() {
-    # Install devtools.
-    Rscript -e 'install.packages("devtools", repos="'"${CRAN}"'")'
-    Rscript -e 'library(devtools); library(methods); install_github("devtools")'
-    # Mark installation
-    HAVE_DEVTOOLS="yes"
+EnsureDevtools() {
+    if ! Rscript -e 'if (!("devtools" %in% rownames(installed.packages()))) q(status=1)' ; then
+        # Install devtools.
+        Rscript -e 'install.packages("devtools", repos="'"${CRAN}"'")'
+        Rscript -e 'library(devtools); library(methods); install_github("devtools")'
+    fi
 }
 
 AptGetInstall() {
@@ -86,9 +90,7 @@ GithubPackage() {
     # Note that bash quoting makes this annoying for any additional
     # arguments.
 
-    if [ "no" == "${HAVE_DEVTOOLS}" ]; then
-        DevtoolsInstall
-    fi
+    EnsureDevtools
 
     # Get the package name and strip it
     PACKAGE_NAME=$1
@@ -106,10 +108,7 @@ GithubPackage() {
 }
 
 InstallDeps() {
-    if [ "no" == "${HAVE_DEVTOOLS}" ]; then
-        DevtoolsInstall
-    fi
-
+    EnsureDevtools
     Rscript -e 'library(devtools); library(methods); options(repos=c(CRAN="'"${CRAN}"'")); devtools:::install_deps(dependencies = TRUE)'
 }
 
@@ -127,8 +126,9 @@ case $COMMAND in
     "bootstrap")
         Bootstrap
         ;;
-    "devtools_install") 
-        DevtoolsInstall 
+    "devtools_install")
+        # TODO(craigcitro): Delete this function, since we don't need it.
+        echo '***** devtools_install is deprecated and will soon disappear. *****'
         ;;
     "aptget_install") 
         AptGetInstall "$*"
