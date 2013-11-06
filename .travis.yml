@@ -6,6 +6,10 @@
 # language: c
 language: objective-c
 
+env:
+  matrix:
+    - BOOTSTRAP_LATEX=" "
+    - R_BUILD_ARGS=" " R_CHECK_ARGS="--as-cran" BOOTSTRAP_LATEX="1"
 script: ./travis-tool.sh run_tests
 notifications:
   email:
@@ -15,6 +19,8 @@ before_install:
   - cp scripts/travis-tool.sh fakepackage
   - cd fakepackage
   - ./travis-tool.sh bootstrap
+before_script:
+  - ./travis-tool.sh dump_sysinfo
 after_success:
   - ./travis-tool.sh dump_logs_by_extension out
 after_failure:
@@ -25,5 +31,9 @@ install:
   # Test r_install (which accepts multiple arguments).
   - ./travis-tool.sh r_install stringr lubridate
   - Rscript -e 'library(stringr); library(lubridate)'
+  # Test github package installation.
+  - Rscript -e 'stopifnot(!any(c("assertthat", "testthat") %in% installed.packages())'
   - ./travis-tool.sh github_package assertthat
   - ./travis-tool.sh github_package testthat
+  - Rscript -e 'library(assertthat); library(testthat)'
+  - ./travis-tool.sh dump_sysinfo | grep -q 'R version '
