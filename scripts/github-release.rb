@@ -52,14 +52,18 @@ class GITHUB_RELEASE
       ## look for [try deploy github] in single line in comment
       message = github_release.commit(repo, commit)[:commit][:message]
       if /^\s*\[try\s+deploy\s+github\]\s*$/.match(message)
-        puts "Find '[try deploy github]' in commit message. Create release."
+        puts "Find '[try deploy github]' in commit message. Try create release."
         if options[:bump_version]
           version = github_release.bump_version(args_version)
         else
           version = args_version
         end
-        puts "Create release with version number #{version}"
-        github_release.create_release(repo, version) unless @dry_run
+        if github_release.releases_versions.any?{|x| x==tag}
+          puts "Version #{version} already exist. Skip."
+        else
+          puts "Create release version #{version}"
+          github_release.create_release(repo, version) unless @dry_run
+        end
       else
         puts "Doesn't seem to be a release. Skip."
       end
