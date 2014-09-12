@@ -266,6 +266,24 @@ RunTests() {
     fi
 }
 
+BootstrapDeploy() {
+    if [[ -z ${BOOTSTRAP_DEPLOY_COMPLETE} ]]; then
+        Retry gem install dpl octokit mime-types
+        BOOTSTRAP_DEPLOY_COMPLETE="true"
+    fi
+}
+
+Deploy() {
+    BootstrapDeploy
+    R_PACKAGE_VERSION=$(grep -i "^Version: " DESCRIPTION | sed 's/[Vv]ersion:\s*//')
+    for FILE in "$@"; do
+        ## The github token must be save to ${GITHUB_TOKEN} securely
+        ## before calling this command
+        ./github-release.rb --version=${R_PACKAGE_VERSION} --file="${FILE}"
+    done
+}
+
+
 Retry() {
     if "$@"; then
         return 0
@@ -334,6 +352,11 @@ case $COMMAND in
     ## Run the actual tests, ie R CMD check
     "run_tests")
         RunTests
+        ;;
+    ##
+    ## Deploy package and upload accesses as github releases
+    "deploy")
+        Deploy "$@"
         ;;
     ##
     ## Dump information about installed packages
