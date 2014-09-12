@@ -60,6 +60,8 @@ class GITHUB_RELEASE
         end
         puts "Create release with version number #{version}"
         github_release.create_release(repo, version) unless @dry_run
+      else
+        puts "Doesn't seem to be a release. Skip."
       end
     end
     return github_release
