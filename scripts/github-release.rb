@@ -63,7 +63,7 @@ class GITHUB_RELEASE
         else
           version = args_version
         end
-        if github_release.release_version.include? version
+        if github_release.releases_versions.include? version
           puts "Version #{version} already exist. Skip.".green
         else
           puts "Create release version #{version}".green
