@@ -268,7 +268,7 @@ RunTests() {
 
 BootstrapDeploy() {
     if [[ -z ${BOOTSTRAP_DEPLOY_COMPLETE} ]]; then
-        Retry gem install dpl octokit mime-types
+        Retry gem install dpl octokit mime-types colorize
         BOOTSTRAP_DEPLOY_COMPLETE="true"
     fi
 }

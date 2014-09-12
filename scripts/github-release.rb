@@ -3,12 +3,13 @@ class GITHUB_RELEASE
   require 'octokit'
   require 'pathname'
   require 'mime-types'
+  require 'colorize'
   
   Error = Class.new(StandardError)
   OPTION_PATTERN = /\A--([a-z][a-z_\-]*)(?:=(.+))?\z/
 
   def self.die(message)
-    $stderr.puts("Error: " + message)
+    $stderr.puts(("Error: " + message).red)
     exit 1
   end
   
@@ -34,17 +35,17 @@ class GITHUB_RELEASE
     if tag and (tag != "")
       ## build for a tag
       if github_release.releases_versions.any?{|x| x==tag}
-        puts  "The current build is for a release. Try to upload asstes"
+        puts  "The current build is for a release. Try to upload asstes".green
         release_url = ( github_release.list_releases.select{|r| r.tag_name == tag} )[0].url
         github_release.upload_asset(release_url, Array(options[:file])) 
       else
         if /^v(\d+)(\.\d+)*/ =~ tag
-          puts "The current build is for a tag, which looks like a release version number. Create release."
+          puts "The current build is for a tag, which looks like a release version number. Create release.".green
           github_release.create_release(repo, tag) unless options[:dry_run]
         ## TODO: If create release wouldn't trigger another build,
         ## we should upload asset here.
         else
-          puts "The tag name doesn't seem to be a release name. Skip release."
+          puts "The tag name doesn't seem to be a release name. Skip release.".green
         end
       end
     else
@@ -52,20 +53,20 @@ class GITHUB_RELEASE
       ## look for [try deploy github] in single line in comment
       message = github_release.commit(repo, commit)[:commit][:message]
       if /^\s*\[try\s+deploy\s+github\]\s*$/.match(message)
-        puts "Find '[try deploy github]' in commit message. Try create release."
+        puts "Find '[try deploy github]' in commit message. Try create release.".green
         if options[:bump_version]
           version = github_release.bump_version(args_version)
         else
           version = args_version
         end
         if github_release.releases_versions.any?{|x| x==tag}
-          puts "Version #{version} already exist. Skip."
+          puts "Version #{version} already exist. Skip.".green
         else
-          puts "Create release version #{version}"
+          puts "Create release version #{version}".green
           github_release.create_release(repo, version) unless @dry_run
         end
       else
-        puts "Doesn't seem to be a release. Skip."
+        puts "Doesn't seem to be a release. Skip.".green
       end
     end
     return github_release
@@ -124,7 +125,7 @@ class GITHUB_RELEASE
         end
       end.compact
       version = prefix + ((matched_version.max || -1) + 1).to_s + suffix
-      puts "The bumped version is #{version}"
+      puts "The bumped version is #{version}".green
       return version
     end
   end
@@ -136,14 +137,14 @@ class GITHUB_RELEASE
     file_array.each do |file|
       filename = Pathname.new(file).basename.to_s
       if exists_files.include? filename
-        puts "#{filename} already exists, skipping."
+        puts "#{filename} already exists, skipping.".green
       else
         content_type = MIME::Types.type_for(file).first.to_s
         if content_type.empty?
           # Specify the default content type, as it is required by GitHub
           content_type = "application/octet-stream"
         end
-        puts "upload asset #{file}"
+        puts "upload asset #{file}".green
         unless @dry_run
           @client.upload_asset(release_url, file, {:name => filename, :content_type => content_type})
         end
