@@ -1,4 +1,8 @@
 #!/usr/bin/env ruby
+
+# Motived by package package travis-ci/dpl. A few line of the
+# implementations is copied from travis-ci/dpl.
+
 class GITHUB_RELEASE
   require 'octokit'
   require 'pathname'
@@ -86,7 +90,7 @@ class GITHUB_RELEASE
 
   def check_auth
     unless @client.scopes.include? 'public_repo' or @client.scopes.include? 'repo'
-      raise Error, "Dpl does not have permission to upload assets. Make sure your token contains the repo or public_repo scope."
+      raise Error, "github-release does not have permission to upload assets. Make sure your token contains the repo or public_repo scope."
     end
 
   end
