@@ -43,7 +43,7 @@ class GITHUB_RELEASE
         release_url = ( github_release.list_releases.select{|r| r.tag_name == tag} )[0].url
         github_release.upload_asset(release_url, Array(options[:file])) 
       else
-        if /^v(\d+)(\.\d+)*/ =~ tag
+        if /^[vV]?(\d+)(\.\d+)*/ =~ tag
           puts "The current build is for a tag, which looks like a release version number. Create release.".green
           github_release.create_release(repo, tag) unless options[:dry_run]
         ## TODO: If create release wouldn't trigger another build,
@@ -82,7 +82,7 @@ class GITHUB_RELEASE
     @token = token
     @repo = repo
     @dry_run = options[:dry_run]
-    
+        
     @client = Octokit::Client.new(:access_token => @token)
     check_auth
     @client.auto_paginate = true
@@ -150,10 +150,10 @@ class GITHUB_RELEASE
         end
         puts "upload asset #{file}".green
         unless @dry_run
-          @client.upload_asset(release_url, file, {:name => filename, :content_type => content_type})
-        end
+        @client.upload_asset(release_url, file, {:name => filename, :content_type => content_type})
       end
     end
+  end
   end
 
 end
