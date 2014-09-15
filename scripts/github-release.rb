@@ -67,7 +67,7 @@ class GITHUB_RELEASE
           puts "Version #{version} already exist. Skip.".green
         else
           puts "Create release version #{version}".green
-          github_release.create_release(repo, version, {:target_commitish => commit}) unless @dry_run
+          github_release.create_release(repo, version, {:target_commitish => commit}) unless options[:dry_run]
         end
       else
         puts "Doesn't seem to be a release. Skip.".green
