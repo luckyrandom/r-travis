@@ -45,9 +45,9 @@ class GITHUB_RELEASE
       else
         if /^[vV]?(\d+)(\.\d+)*/ =~ tag
           puts "The current build is for a tag, which looks like a release version number. Create release.".green
-          github_release.create_release(repo, tag) unless options[:dry_run]
-        ## TODO: If create release wouldn't trigger another build,
-        ## we should upload asset here.
+          release = github_release.create_release(repo, tag) unless options[:dry_run]
+          ## Creating release doesn't trigger another build. Upload assets.
+          github_release.upload_asset(release.url, Array(options[:file])) 
         else
           puts "The tag name doesn't seem to be a release name. Skip release.".green
         end
