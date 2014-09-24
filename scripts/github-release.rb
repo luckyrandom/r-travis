@@ -64,13 +64,13 @@ class GITHUB_RELEASE
           version = args_version
         end
         if github_release.releases_versions.include? version
-          puts "Version #{version} already exist. Skip.".green
+          puts "Version #{version} already exist. Skip creating release.".green
         else
           puts "Create release version #{version}".green
           github_release.create_release(repo, version, {:target_commitish => commit}) unless options[:dry_run]
         end
       else
-        puts "Doesn't seem to be a release. Skip.".green
+        puts "Doesn't seem to be a release. Skip deployment.".green
       end
     end
     return github_release
