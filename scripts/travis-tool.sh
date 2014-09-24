@@ -267,12 +267,9 @@ RunTests() {
 }
 
 BootstrapDeploy() {
-    if [[ -z ${BOOTSTRAP_DEPLOY_COMPLETE} ]]; then
-        curl -OL http://raw.github.com/luckyrandom/r-travis/master/scripts/github-release.rb
-        chmod 755 ./github-release.rb
-        Retry gem install dpl octokit mime-types colorize
-        BOOTSTRAP_DEPLOY_COMPLETE="true"
-    fi
+    curl -OL http://raw.github.com/luckyrandom/r-travis/master/scripts/github-release.rb
+    chmod 755 ./github-release.rb
+    Retry gem install dpl octokit mime-types colorize
 }
 
 Deploy() {
